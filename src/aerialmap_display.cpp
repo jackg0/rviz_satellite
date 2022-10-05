@@ -21,6 +21,7 @@ limitations under the License. */
 
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
+#include "rviz/properties/enum_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/int_property.h"
 #include "rviz/properties/property.h"
@@ -88,6 +89,13 @@ AerialMapDisplay::AerialMapDisplay() : Display()
   blocks_property_->setMax(MAX_BLOCKS);
   blocks_property_->setShouldBeSaved(true);
   blocks_ = blocks_property_->getInt();
+
+  map_frame_property_ =
+    new EnumProperty("Map Reference Frame", "NED", "Map reference frame in use by robot. Options: NED, ENU.", this,
+                     SLOT(updateMapFrame()));
+  map_frame_property_->addOptionStd("NED");
+  map_frame_property_->addOptionStd("ENU");
+  map_frame_property_->setStdString("NED");
 }
 
 AerialMapDisplay::~AerialMapDisplay()
@@ -412,6 +420,18 @@ void AerialMapDisplay::updateCenterTile(sensor_msgs::NavSatFixConstPtr const& ms
   transformTileToMapFrame();
 }
 
+void AerialMapDisplay::updateMapFrame()
+{
+  if (!isEnabled())
+  {
+      return;
+  }
+
+  ROS_DEBUG_NAMED("rviz_satellite", "Updating map frame");
+
+  transformMapTileToFixedFrame();
+}
+
 void AerialMapDisplay::requestTileTextures()
 {
   if (!isEnabled())
@@ -682,14 +702,21 @@ void AerialMapDisplay::transformTileToMapFrame()
 void AerialMapDisplay::transformMapTileToFixedFrame()
 {
   // orientation of the fixed-frame w.r.t. the map-frame
-  Ogre::Quaternion o_fixed_map;
+  Ogre::Quaternion o_fixed_enu;
   // translation of the fixed-frame w.r.t. the map-frame
-  Ogre::Vector3 t_fixed_map;
+  Ogre::Vector3 t_fixed_enu;
 
   // get transform between map-frame and fixed-frame from the FrameManager
-  if (context_->getFrameManager()->getTransform(MAP_FRAME, ros::Time(), t_fixed_map, o_fixed_map))
+  if (context_->getFrameManager()->getTransform(MAP_FRAME, ros::Time(), t_fixed_enu, o_fixed_enu))
   {
     setStatus(::rviz::StatusProperty::Ok, "Transform", "Transform OK");
+
+    auto o_enu_map = Ogre::Quaternion::IDENTITY;
+    if (map_frame_property_->getStdString() == "NED")
+        o_enu_map = Ogre::Quaternion(0.0, 0.71, 0.71, 0.0);
+
+    auto o_fixed_map = o_fixed_enu * o_enu_map;
+    auto t_fixed_map = o_enu_map * t_fixed_enu;
 
     // the translation of the tile w.r.t. the fixed-frame
     auto const t_centertile_fixed = t_fixed_map + o_fixed_map * t_centertile_map_;

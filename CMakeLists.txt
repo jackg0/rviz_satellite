@@ -21,23 +21,23 @@ set(QT_LIBRARIES Qt5::Core Qt5::Gui Qt5::Network)
 
 ## BUILD ##
 
-set(${PROJECT_NAME}_SOURCES
+set(rviz_satellite_SOURCES
   src/aerialmap_display.cpp
   src/ogre_tile.cpp
   src/tile_id.cpp
 )
 
-set(${PROJECT_NAME}_HEADERS
+set(rviz_satellite_HEADERS
   src/aerialmap_display.h
   src/detail/tile_downloader.h
 )
 
 # invoke MOC and UI/ include Qt headers/ link Qt libraries - alternatively, see CMAKE_AUTOMOC
-qt5_wrap_cpp(${PROJECT_NAME}_MOC_FILES ${${PROJECT_NAME}_HEADERS})
+qt5_wrap_cpp(rviz_satellite_MOC_FILES ${rviz_satellite_HEADERS})
 
 set(PROJECT_SOURCE_FILES
-  ${${PROJECT_NAME}_SOURCES}
-  ${${PROJECT_NAME}_MOC_FILES}
+  ${rviz_satellite_SOURCES}
+  ${rviz_satellite_MOC_FILES}
 )
 
 include_directories(
@@ -46,20 +46,20 @@ include_directories(
 )
 
 add_library(
-  ${PROJECT_NAME}
+  rviz_satellite
   ${PROJECT_SOURCE_FILES}
 )
 
 # set compiler options and inject version of software (see tile_downloader.h)
 # rviz_satellite_VERSION is defined via catkin and is read from the package.xml
 target_compile_options(
-  ${PROJECT_NAME}
+  rviz_satellite
   PUBLIC
   -Wall -Wunused -std=c++11 "-DRVIZ_SATELLITE_VERSION=\"${rviz_satellite_VERSION}\""
 )
 
 target_link_libraries(
-  ${PROJECT_NAME}
+  rviz_satellite
   ${QT_LIBRARIES}
   ${catkin_LIBRARIES}
 )
@@ -68,7 +68,7 @@ target_link_libraries(
 ## INSTALL ##
 
 install(TARGETS
-  ${PROJECT_NAME}
+  rviz_satellite
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

@@ -38,6 +38,7 @@ class ManualObject;
 
 namespace rviz
 {
+class EnumProperty;
 class FloatProperty;
 class IntProperty;
 class Property;
@@ -65,6 +66,7 @@ protected Q_SLOTS:
   void updateTileUrl();
   void updateZoom();
   void updateBlocks();
+  void updateMapFrame();
 
 protected:
   // overrides from Display
@@ -156,6 +158,7 @@ protected:
   IntProperty* blocks_property_;
   FloatProperty* alpha_property_;
   Property* draw_under_property_;
+  EnumProperty* map_frame_property_;
 
   /// the alpha value of the tile's material
   float alpha_;
