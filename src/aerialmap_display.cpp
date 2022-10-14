@@ -217,7 +217,8 @@ void AerialMapDisplay::updateTileUrl()
   }
 
   // Check for valid url: https://stackoverflow.com/a/38608262
-  if (!std::regex_match(tile_url, std::regex(R"(^(https?:\/\/).*)")))
+  if (!std::regex_match(tile_url, std::regex(R"(^(https?:\/\/).*)")) &&
+      !std::regex_match(tile_url, std::regex(R"(^(file?:\/\/).*)")))
   {
     ROS_ERROR("Invalid Object URI: %s", tile_url.c_str());
     // Still setting the url since keeping the old is probably unexpected

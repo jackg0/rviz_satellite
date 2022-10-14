@@ -14,6 +14,8 @@ limitations under the License. */
 
 #include <functional>
 
+#include <boost/algorithm/string/replace.hpp>
+
 #include <QCryptographicHash>
 #include <QDir>
 #include <QImage>
@@ -63,7 +65,7 @@ public:
    * Since QNetworkDiskCache is used, tiles will be loaded from the file system if they have been cached. Otherwise they
    * get downloaded.
    */
-  void loadTile(TileId const& tile_id)
+  void loadTileRemote(TileId const& tile_id)
   {
     // see https://foundation.wikimedia.org/wiki/Maps_Terms_of_Use#Using_maps_in_third-party_services
     auto const request_url = QUrl(QString::fromStdString(tileURL(tile_id)));
@@ -78,6 +80,37 @@ public:
     request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::CacheLoadControl::PreferCache);
     request.setAttribute(QNetworkRequest::User, variant);
     manager->get(request);
+  }
+
+  /**
+   * @brief Load a specific tile from the local filesystem.
+   *
+   * Expects caller to check if image is valid. See call in TileCache::request function.
+   */
+  QImage loadTileLocal(TileId const& tile_id)
+  {
+    auto const filename_uri = tileURL(tile_id);
+
+    auto filename = filename_uri;
+
+    boost::replace_all(filename, "file://", "");
+
+    auto reader = QImageReader(QString::fromStdString(filename));
+
+    if (!reader.canRead())
+    {
+      ROS_ERROR_STREAM("Unable to decode image at " << filename);
+      return QImage{ };
+    }
+
+    auto image = reader.read();
+
+    if (image.isNull())
+    {
+      ROS_ERROR_STREAM("QImageReader able to decode but read failed for " << filename);
+    }
+
+    return image;
   }
 
 public slots:

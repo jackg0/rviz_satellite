@@ -97,9 +97,20 @@ public:
       {
         TileId const to_find{ area.center.tile_server, { x, y }, area.center.zoom };
 
-        if (cached_tiles.find(to_find) == cached_tiles.end())
+        if (cached_tiles.find(to_find) != cached_tiles.end())
         {
-          downloader.loadTile(to_find);
+          continue;
+        }
+
+        if (to_find.tile_server.find("file://") != std::string::npos)
+        {
+          auto image = downloader.loadTileLocal(to_find);
+          if (!image.isNull())
+            cached_tiles.emplace(std::make_pair(to_find, std::move(image))); // emplace directly without callback
+        }
+        else
+        {
+          downloader.loadTileRemote(to_find);
         }
       }
     }
