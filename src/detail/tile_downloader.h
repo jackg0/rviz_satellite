@@ -95,7 +95,7 @@ public:
 
     boost::replace_all(filename, "file://", "");
 
-    auto reader = QImageReader(QString::fromStdString(filename));
+    QImageReader reader(QString::fromStdString(filename));
 
     if (!reader.canRead())
     {
