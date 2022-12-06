@@ -17,7 +17,7 @@ limitations under the License. */
 #include <cmath>
 
 /// Max number of adjacent blocks to support.
-static constexpr int MAX_BLOCKS = 8;
+static constexpr int MAX_BLOCKS = 20;
 
 /// Max zoom level to support.
 static constexpr int MAX_ZOOM = 22;
